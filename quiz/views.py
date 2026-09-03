@@ -147,7 +147,6 @@ class CodeEvaluateView(APIView):
 
         code = request.data.get('code', '')
         language = request.data.get('language', 'javascript')
-        prompt = request.data.get('prompt', 'Fais ce que tu veux.')
 
         if not code:
             return Response({"error": "No code provided"}, status=400)
@@ -157,13 +156,16 @@ class CodeEvaluateView(APIView):
         
         system_prompt = f"""
         Tu es un professeur de programmation stricte mais juste.
-        Un étudiant a écrit ce code en {language} pour répondre à ce problème : "{prompt}".
+        Un étudiant a écrit ce code en {language}.
+        
+        Analyse et évalue la qualité, l'exactitude et la pertinence de ce code.
         
         Évalue le code et réponds UNIQUEMENT en JSON avec ce format exact :
         {{
             "is_correct": boolean,
             "feedback": "string (explication détaillée de ce qui va ou ne va pas, en français)",
-            "hints": ["string", "string"] (si c'est faux, donne 1 ou 2 indices. Si c'est vrai, liste vide)
+            "hints": ["string", "string"] (si c'est faux, donne 1 ou 2 indices. Si c'est vrai, liste vide),
+            "corrected_code": "string (fournis le code corrigé complet si l'étudiant a fait des erreurs, ou une version optimisée. Si le code est parfait, met null)"
         }}
 
         Code de l'étudiant :
@@ -184,14 +186,16 @@ class CodeEvaluateView(APIView):
             return Response({
                 'is_correct': result.get('is_correct', False),
                 'feedback': result.get('feedback', ''),
-                'hints': result.get('hints', [])
+                'hints': result.get('hints', []),
+                'corrected_code': result.get('corrected_code', None)
             })
         except Exception as e:
             # Fallback
             return Response({
                 'is_correct': False,
                 'feedback': f"Erreur lors de l'évaluation : {str(e)}",
-                'hints': []
+                'hints': [],
+                'corrected_code': None
             })
 
 import google.generativeai as genai

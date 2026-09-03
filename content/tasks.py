@@ -38,11 +38,13 @@ def process_drive_resource(resource_id, mime_type=None):
     except Exception as e:
         return f"Error processing resource {resource_id}: {e}"
 
+import os
+import google.generativeai as genai
+
 @shared_task
 def generate_qcm_for_resource(resource_id):
     """
-    Mock integration of Claude AI to generate questions.
-    In production, this calls Anthropic's Messages API.
+    Integration of Gemini AI to generate questions.
     """
     try:
         resource = Resource.objects.get(id=resource_id)
@@ -52,63 +54,84 @@ def generate_qcm_for_resource(resource_id):
             process_drive_resource(resource.id, resource.mime_type)
             resource.refresh_from_db()
             
-        text = resource.extracted_text or "Texte par défaut pour la simulation."
+        text = resource.extracted_text
+        if not text:
+            return "No text available in the resource to generate QCM."
+            
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        model = genai.GenerativeModel('gemini-flash-latest')
         
-        # Simulate AI API Call delay
-        time.sleep(3)
+        prompt = f"""
+        Tu es un professeur expert qui crée des Quiz (QCM) d'évaluation pour tes étudiants.
+        À partir du texte du cours suivant, génère exactement 5 questions pertinentes pour tester la compréhension de l'étudiant.
         
-        # Mock Claude response
-        mock_response = [
-            {
-                "text": f"Question générée depuis {resource.title} : Quelle est la principale caractéristique étudiée ?",
+        Pour chaque question, tu dois fournir 4 choix de réponse, dont UN SEUL est correct.
+        Tu dois également fournir une justification claire expliquant pourquoi la bonne réponse est correcte.
+        Le niveau de difficulté doit être entre 1 (Facile) et 5 (Très difficile).
+        
+        Réponds UNIQUEMENT en JSON avec ce format exact (pas de texte avant ou après) :
+        [
+            {{
+                "text": "La question posée ?",
                 "difficulty": 2,
-                "justification": "D'après le document, c'est l'élément central du chapitre.",
+                "justification": "Explication de la réponse...",
                 "choices": [
-                    {"text": "La bonne réponse évidente", "is_correct": True},
-                    {"text": "Un piège classique", "is_correct": False},
-                    {"text": "Une option hors-sujet", "is_correct": False},
-                    {"text": "Une option absurde", "is_correct": False}
+                    {{"text": "Mauvaise réponse 1", "is_correct": false}},
+                    {{"text": "Bonne réponse", "is_correct": true}},
+                    {{"text": "Mauvaise réponse 2", "is_correct": false}},
+                    {{"text": "Mauvaise réponse 3", "is_correct": false}}
                 ]
-            },
-            {
-                "text": f"Dans le cadre de {resource.title}, que signifie le concept clé mentionné en page 2 ?",
-                "difficulty": 4,
-                "justification": "Le concept est défini explicitement comme tel dans le glossaire.",
-                "choices": [
-                    {"text": "La définition correcte", "is_correct": True},
-                    {"text": "L'ancienne définition", "is_correct": False},
-                    {"text": "Une approximation", "is_correct": False},
-                    {"text": "Une erreur courante", "is_correct": False}
-                ]
-            }
+            }}
         ]
         
+        Texte du cours :
+        \"\"\"
+        {text}
+        \"\"\"
+        """
+        
+        response = model.generate_content(prompt)
+        content = response.text.strip()
+        
+        # Nettoyage du markdown si l'IA en renvoie
+        if content.startswith('```json'):
+            content = content[7:-3]
+        elif content.startswith('```'):
+            content = content[3:-3]
+            
+        try:
+            questions_data = json.loads(content)
+        except json.JSONDecodeError:
+            return "Failed to parse AI JSON response"
+        
         # Create a QuestionBank for this Chapter if none exists
-        # Or attach directly if we want
         chapter = resource.chapter
         bank, _ = QuestionBank.objects.get_or_create(
             chapter=chapter,
-            title=f"Banque de QCM: {chapter.title}"
+            title=f"QCM: {chapter.title}"
         )
         
-        # Save mock questions to database
-        for q_data in mock_response:
+        # Save real questions to database
+        for q_data in questions_data:
             question = Question.objects.create(
                 bank=bank,
-                text=q_data['text'],
-                justification=q_data['justification'],
-                difficulty=q_data['difficulty'],
+                text=q_data.get('text', 'Question manquante'),
+                justification=q_data.get('justification', ''),
+                difficulty=q_data.get('difficulty', 2),
                 status='draft_ai',
                 source_resource=resource
             )
-            for choice_data in q_data['choices']:
+            choices = q_data.get('choices', [])
+            for choice_data in choices:
                 AnswerChoice.objects.create(
                     question=question,
-                    text=choice_data['text'],
-                    is_correct=choice_data['is_correct']
+                    text=choice_data.get('text', 'Choix'),
+                    is_correct=choice_data.get('is_correct', False)
                 )
                 
-        return f"Generated {len(mock_response)} questions for resource {resource_id}"
+        return f"Generated {len(questions_data)} questions for resource {resource_id}"
         
     except Resource.DoesNotExist:
         return "Resource not found"
+    except Exception as e:
+        return f"Error generating QCM: {str(e)}"

@@ -73,10 +73,10 @@ class RegisterView(APIView):
             first_name=first_name,
             last_name=last_name,
             role='student',
-            is_active=True  # Activated by default for dev
+            is_active=False  # Requires admin approval
         )
 
-        return Response({'message': 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Compte créé avec succès ! Il doit être validé par un administrateur avant connexion.'}, status=status.HTTP_201_CREATED)
 
 class AdminUserListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -125,3 +125,36 @@ class VerifyEmailView(APIView):
             return Response({'message': 'Compte activé avec succès.'})
         else:
             return Response({'error': 'Lien invalide ou expiré.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        first_name = request.data.get('first_name', user.first_name)
+        last_name = request.data.get('last_name', user.last_name)
+        
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+        
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        
+        if not old_password or not new_password:
+            return Response({'error': 'Ancien et nouveau mot de passe sont requis'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not user.check_password(old_password):
+            return Response({'error': 'L\'ancien mot de passe est incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Mot de passe mis à jour avec succès'})
