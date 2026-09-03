@@ -5,10 +5,13 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 import FlashcardScreen from './src/screens/FlashcardScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
 import ModuleDetailScreen from './src/screens/ModuleDetailScreen';
 import DocumentViewerScreen from './src/screens/DocumentViewerScreen';
+import QCMScreen from './src/screens/QCMScreen';
+import CodePlaygroundScreen from './src/screens/CodePlaygroundScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,17 +46,31 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {userToken == null ? (
-          <Stack.Screen 
-            name="Login" 
-            component={LoginScreen} 
-            initialParams={{ setUserToken }} 
-          />
+          <>
+            <Stack.Screen 
+              name="Login" 
+              component={LoginScreen} 
+              initialParams={{ setUserToken }} 
+            />
+            <Stack.Screen 
+              name="Register" 
+              component={RegisterScreen} 
+            />
+          </>
         ) : (
           <>
             <Stack.Screen name="MainTabs" component={MainTabNavigator} initialParams={{ setUserToken }} />
             <Stack.Screen 
               name="Flashcards" 
               component={FlashcardScreen} 
+            />
+            <Stack.Screen 
+              name="QCM" 
+              component={QCMScreen} 
+            />
+            <Stack.Screen 
+              name="CodePlayground" 
+              component={CodePlaygroundScreen} 
             />
             <Stack.Screen 
               name="ModuleDetail" 

@@ -8,7 +8,7 @@ const API_URL = Platform.OS === 'web'
   ? `http://${window.location.hostname}:8000/api/v1` 
   : 'http://10.0.2.2:8000/api/v1';
 
-export default function LoginScreen({ route }) {
+export default function LoginScreen({ route, navigation }) {
   const { setUserToken } = route.params;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -44,10 +44,19 @@ export default function LoginScreen({ route }) {
       setUserToken(access);
     } catch (error) {
       console.error(error);
+      const errorData = error.response?.data;
+      let errorMsg = 'Identifiants incorrects ou problème de connexion.';
+      
+      if (errorData?.detail && typeof errorData.detail === 'string' && errorData.detail.toLowerCase().includes('active')) {
+        errorMsg = 'Votre compte est en attente de validation par un administrateur.';
+      } else if (Platform.OS === 'web') {
+        errorMsg += ' (assurez-vous que le backend tourne)';
+      }
+
       if (Platform.OS === 'web') {
-        window.alert('Identifiants incorrects ou problème de connexion au serveur (assurez-vous que le backend tourne).');
+        window.alert(errorMsg);
       } else {
-        Alert.alert('Erreur', 'Identifiants incorrects ou problème de connexion.');
+        Alert.alert('Erreur', errorMsg);
       }
     } finally {
       setLoading(false);
@@ -88,6 +97,13 @@ export default function LoginScreen({ route }) {
             <Text style={styles.buttonText}>Se connecter</Text>
           )}
         </TouchableOpacity>
+        
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Vous n'avez pas de compte ? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.registerLink}>S'inscrire</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -138,6 +154,20 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 25,
+  },
+  registerText: {
+    color: '#64748b',
+    fontSize: 15,
+  },
+  registerLink: {
+    color: '#3b82f6',
+    fontSize: 15,
     fontWeight: 'bold',
   },
 });

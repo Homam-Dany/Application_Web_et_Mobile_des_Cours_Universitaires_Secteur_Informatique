@@ -1,30 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, BookOpen, Brain, Bot, User } from 'lucide-react-native';
+import { Home, BookOpen, Brain, Bot, User, Settings, Database } from 'lucide-react-native';
+import { Platform, ActivityIndicator, View } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 import HomeScreen from '../screens/HomeScreen';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import AdminResourcesScreen from '../screens/AdminResourcesScreen';
+import AdminUsersScreen from '../screens/AdminUsersScreen';
+import AdminCoursesScreen from '../screens/AdminCoursesScreen';
 import CoursesScreen from '../screens/CoursesScreen';
 import PracticeScreen from '../screens/PracticeScreen';
 import AIChatScreen from '../screens/AIChatScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
+const API_URL = Platform.OS === 'web' 
+  ? 'http://127.0.0.1:8000/api/v1' 
+  : 'http://10.0.2.2:8000/api/v1';
+
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator({ route }) {
   const { setUserToken } = route.params;
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkUserRole();
+  }, []);
+
+  const checkUserRole = async () => {
+    try {
+      let token;
+      if (Platform.OS === 'web') {
+        token = localStorage.getItem('access_token');
+      } else {
+        token = await SecureStore.getItemAsync('access_token');
+      }
+      const res = await axios.get(`${API_URL}/users/me/`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      setIsAdmin(res.data.role === 'admin' || res.data.role === 'teacher');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    );
+  }
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          if (route.name === 'Accueil') {
+          if (route.name === 'Accueil' || route.name === 'Dashboard') {
             return <Home size={size} color={color} />;
-          } else if (route.name === 'Cours') {
+          } else if (route.name === 'Cours' || route.name === 'Modules') {
             return <BookOpen size={size} color={color} />;
           } else if (route.name === 'Entraînement') {
             return <Brain size={size} color={color} />;
           } else if (route.name === 'IA Chatbot') {
             return <Bot size={size} color={color} />;
+          } else if (route.name === 'Fichiers') {
+            return <Database size={size} color={color} />;
+          } else if (route.name === 'Utilisateurs') {
+            return <Settings size={size} color={color} />;
           } else if (route.name === 'Profil') {
             return <User size={size} color={color} />;
           }
@@ -42,14 +90,32 @@ export default function MainTabNavigator({ route }) {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Accueil" 
-        component={HomeScreen} 
-        initialParams={{ setUserToken }} 
-      />
-      <Tab.Screen name="Cours" component={CoursesScreen} initialParams={{ setUserToken }} />
-      <Tab.Screen name="Entraînement" component={PracticeScreen} />
-      <Tab.Screen name="IA Chatbot" component={AIChatScreen} />
+      {isAdmin ? (
+        <>
+          <Tab.Screen 
+            name="Dashboard" 
+            component={AdminDashboardScreen} 
+          />
+          <Tab.Screen 
+            name="Cours" 
+            component={CoursesScreen} 
+          />
+          <Tab.Screen 
+            name="Utilisateurs" 
+            component={AdminUsersScreen} 
+          />
+        </>
+      ) : (
+        <Tab.Screen 
+          name="Accueil" 
+          component={HomeScreen} 
+          initialParams={{ setUserToken }} 
+        />
+      )}
+      {!isAdmin && <Tab.Screen name="Cours" component={CoursesScreen} initialParams={{ setUserToken }} />}
+      {!isAdmin && <Tab.Screen name="Entraînement" component={PracticeScreen} />}
+      {!isAdmin && <Tab.Screen name="IA Chatbot" component={AIChatScreen} />}
+      
       <Tab.Screen 
         name="Profil" 
         component={ProfileScreen} 

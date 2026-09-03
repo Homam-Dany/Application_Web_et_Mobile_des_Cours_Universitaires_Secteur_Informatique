@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
-import { ChevronLeft, Download } from 'lucide-react-native';
-import * as Linking from 'expo-linking';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator, Linking } from 'react-native';
+import { ChevronLeft, Download, Brain } from 'lucide-react-native';
 
 // Conditionally import WebView to avoid crashes on Web if it's not supported natively
 let WebView;
@@ -15,12 +14,10 @@ export default function DocumentViewerScreen({ route, navigation }) {
   // The direct download URL from Google Drive
   const downloadUrl = `https://drive.google.com/uc?export=download&id=${resource.drive_file_id}`;
   
-  // The URL to embed it cleanly in Google Docs Viewer
-  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(downloadUrl)}&embedded=true`;
+  // We MUST use the native Google Drive preview because Google Docs Viewer 
+  // cannot access private/restricted Google Drive files and returns a login HTML page.
+  const viewerUrl = `https://drive.google.com/file/d/${resource.drive_file_id}/preview`;
 
-  const handleDownload = () => {
-    Linking.openURL(downloadUrl).catch(err => console.error("Couldn't open link", err));
-  };
 
   return (
     <View style={styles.container}>
@@ -33,24 +30,38 @@ export default function DocumentViewerScreen({ route, navigation }) {
           <Text style={styles.headerTitle} numberOfLines={1}>{resource.title}</Text>
           <Text style={styles.headerSubtitle}>{resource.chapterName || 'Document'}</Text>
         </View>
-        <TouchableOpacity onPress={handleDownload} style={styles.downloadButton}>
-          <Download size={24} color="#3b82f6" />
-        </TouchableOpacity>
+        
+        {resource.resource_type === 'course' && (
+          <TouchableOpacity 
+            style={styles.qcmButton}
+            onPress={() => navigation.navigate('QCM', { chapterId: resource.chapter, resourceId: resource.id })}
+          >
+            <Brain size={20} color="#fff" />
+            <Text style={styles.qcmButtonText}>QCM</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Viewer */}
-      <View style={styles.viewerContainer}>
+      <View style={[styles.viewerContainer, { overflow: 'hidden', position: 'relative' }]}>
         {Platform.OS === 'web' ? (
           <iframe
             src={viewerUrl}
-            style={{ flex: 1, width: '100%', height: '100%', border: 'none' }}
+            style={{ 
+              position: 'absolute',
+              top: -56, /* CSS Hack: Hide Google Drive toolbar */
+              left: 0,
+              width: '100%', 
+              height: 'calc(100% + 56px)', 
+              border: 'none' 
+            }}
             title={resource.title}
             allowFullScreen
           />
         ) : (
           <WebView
             source={{ uri: viewerUrl }}
-            style={{ flex: 1 }}
+            style={{ marginTop: -56, flex: 1, width: '100%', height: '100%' }}
             startInLoadingState={true}
             renderLoading={() => (
               <View style={styles.loadingContainer}>
@@ -99,6 +110,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#eff6ff',
     borderRadius: 8,
     marginLeft: 10,
+  },
+  qcmButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  qcmButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: 6,
   },
   viewerContainer: {
     flex: 1,
