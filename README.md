@@ -31,21 +31,21 @@ L'application repose sur une architecture moderne séparant clairement le backen
 
 ```mermaid
 graph TD
-    Client_Mobile[📱 Application Mobile<br/>React Native / Expo] --> |API REST / JWT| Backend
-    Client_Web[💻 Application Web<br/>React Native Web] --> |API REST / JWT| Backend
+    Client_Mobile["📱 Application Mobile (React Native / Expo)"] --> |API REST / JWT| Backend
+    Client_Web["💻 Application Web (React Native Web)"] --> |API REST / JWT| Backend
     
-    subgraph Backend [Backend Django]
-        API[API DRF]
-        Auth[Authentification JWT]
-        AI_Service[Service IA Gemini/OpenAI]
-        DB[(Base de Données<br/>SQLite/PostgreSQL)]
+    subgraph Backend
+        API["API DRF"]
+        Auth["Authentification JWT"]
+        AI_Service["Service IA Gemini/OpenAI"]
+        DB[("Base de Données (SQLite/PostgreSQL)")]
         
         API --> Auth
         API --> AI_Service
         API --> DB
-    End
+    end
     
-    AI_Service --> |Requêtes LLM| Cloud_AI[Google Gemini API]
+    AI_Service --> |Requêtes LLM| Cloud_AI["Google Gemini API"]
 ```
 
 ---
