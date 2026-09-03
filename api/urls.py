@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from content.views import StreamViewSet, ModuleViewSet, ChapterViewSet, ResourceViewSet, AdminStatsView, GenerateQCMView, JobOfferViewSet
-from quiz.views import QuestionBankViewSet, QuestionViewSet, AnswerChoiceViewSet, TestSessionViewSet, CodeEvaluateView, ChatbotView, StudentStatsView, FlashcardDeckViewSet, FlashcardViewSet, StudentFlashcardProgressViewSet
+from quiz.views import QuestionBankViewSet, QuestionViewSet, AnswerChoiceViewSet, TestSessionViewSet, CodeEvaluateView, ChatbotView, StudentStatsView, FlashcardDeckViewSet, FlashcardViewSet, StudentFlashcardProgressViewSet, TutorChatView
 
 router = DefaultRouter()
 router.register(r'streams', StreamViewSet)
@@ -31,4 +31,5 @@ urlpatterns = [
     path('code/evaluate/', CodeEvaluateView.as_view(), name='code_evaluate'),
     path('chat/', ChatbotView.as_view(), name='chat'),
     path('student/stats/', StudentStatsView.as_view(), name='student_stats'),
+    path('tutor/chat/', TutorChatView.as_view(), name='tutor_chat'),
 ]

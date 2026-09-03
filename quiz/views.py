@@ -318,5 +318,36 @@ class StudentStatsView(APIView):
             "estimated_hours": estimated_hours,
             "radar_data": radar_data,
             "strengths": strengths,
-            "weaknesses": weaknesses
+            "weaknesses": weaknesses,
         })
+
+class TutorChatView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        import google.generativeai as genai
+        import os
+        
+        message = request.data.get('message', '')
+        document_title = request.data.get('documentTitle', 'un document de cours')
+        
+        if not message:
+            return Response({"reply": "Message vide"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            prompt = f"""Tu es un tuteur universitaire virtuel expert et bienveillant. 
+L'étudiant est en train d'étudier le document intitulé : "{document_title}".
+Il vient de te poser cette question : "{message}"
+
+Réponds de manière claire, structurée et pédagogique. N'hésite pas à donner des exemples pertinents liés au sujet de "{document_title}".
+Utilise du Markdown pour formater ta réponse (gras, listes, blocs de code si besoin). Ne sois pas trop long, va à l'essentiel."""
+
+            response = model.generate_content(prompt)
+            reply = response.text
+        except Exception as e:
+            reply = f"Désolé, je rencontre des difficultés de connexion avec mon cerveau IA. (Erreur : {str(e)})"
+            
+        return Response({"reply": reply})
