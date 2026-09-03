@@ -42,9 +42,10 @@ class AdminStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        total_students = User.objects.filter(role='student').count()
-        total_resources = Resource.objects.count()
-        total_qcm = Question.objects.count()
+        from quiz.models import TestSession
+        total_users = User.objects.filter(role='student').count()
+        total_documents = Resource.objects.count()
+        total_quizzes_taken = TestSession.objects.count()
 
         # Distribution
         resource_counts = Resource.objects.values('resource_type').annotate(count=Count('id'))
@@ -87,12 +88,13 @@ class AdminStatsView(APIView):
                 })
 
         return Response({
-            'total_students': total_students,
-            'total_resources': total_resources,
-            'total_qcm': total_qcm,
+            'total_users': total_users,
+            'total_documents': total_documents,
+            'total_quizzes_taken': total_quizzes_taken,
             'resource_distribution': resource_distribution,
             'activity_data': activity_data,
-            'struggling_students': struggling_students
+            'struggling_students': struggling_students,
+            'platform_usage': {'web': 45, 'mobile': 55}
         })
 
 class GenerateQCMView(APIView):

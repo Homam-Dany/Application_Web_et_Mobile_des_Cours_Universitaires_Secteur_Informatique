@@ -1,196 +1,154 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/Homam-Dany/Application_Web_et_Mobile_des_Cours_Universitaires_Secteur_Informatique/main/frontend/public/favicon.svg" alt="Logo" width="120" height="120">
-  
-  # EduPlatform - Plateforme Universitaire d'Apprentissage (Web & Mobile)
-  
-  **Une solution complète et intelligente pour la gestion des cours, l'apprentissage interactif, et l'évaluation continue dans le secteur informatique.**
+# 🎓 Plateforme E-Learning Universitaire (Secteur Informatique)
 
-  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-  [![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green)](https://www.djangoproject.com/)
-  [![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev/)
-  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-</div>
+![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green)
+![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)
+![Gemini AI](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
 
-<br />
+> **Créateur et Responsable de l'Application :** Homam Dany
 
-## 🌟 Présentation du Projet
-
-**EduPlatform** est un écosystème d'apprentissage de nouvelle génération conçu spécifiquement pour le secteur universitaire informatique. Il se divise en deux interfaces complémentaires :
-1. **Un Portail Web Administration & Étudiant** : Pour la gestion avancée des ressources, la visualisation des statistiques, et l'accès aux cours.
-2. **Une Application Mobile Interactive** : Pour l'apprentissage en mobilité, la révision intelligente (Flashcards, QCM), et l'interaction avec le Tuteur IA.
+Bienvenue sur le dépôt officiel de notre **Plateforme E-Learning Nouvelle Génération**. Conçue spécialement pour les étudiants en informatique, cette solution **Web & Mobile** intègre les dernières avancées en Intelligence Artificielle pour offrir un apprentissage interactif, personnalisé et performant.
 
 ---
 
-## ✨ Fonctionnalités Clés
+## 🌟 Fonctionnalités Clés
 
-### 💻 Portail Web (Administration & Étudiant)
-- **Tableau de Bord Analytique** : Suivi des statistiques d'apprentissage en temps réel (taux de réussite, progression par module).
-- **Gestion des Ressources** : Interface pour les professeurs permettant d'importer des fichiers (PDF, Word, PPT) via une intégration **Google Drive API**.
-- **Générateur de Quiz IA** : Création automatique de QCM pertinents à partir des fichiers de cours téléversés.
-- **Défis de Code (Code Challenges)** : Un IDE intégré pour s'exercer à la programmation avec correction automatisée.
+### 🧠 Intégration de l'Intelligence Artificielle
+- **Génération de QCM Dynamiques** : L'IA analyse le contenu exact des supports de cours (PDF, Textes) et génère des QCM sur-mesure pour tester les connaissances.
+- **Code Playground Intelligent** : Un éditeur de code multi-langages (Python, Java, C++, PHP, SQL...) qui évalue le code des étudiants, trouve les erreurs et propose des corrections en temps réel.
+- **Analyse des Performances** : L'IA identifie les points forts et les axes d'amélioration (Points Faibles) de chaque étudiant en fonction de ses résultats aux tests.
 
-### 📱 Application Mobile (React Native)
-- **Lecteur de Documents Intégré (In-App Viewer)** : Consultation fluide des PDF et présentations sans quitter l'application.
-- **Révisions Intelligentes** : Système de Flashcards avec algorithme de répétition espacée.
-- **Tuteur IA Intégré (Chatbot)** : Assistant d'intelligence artificielle disponible 24/7 pour expliquer des concepts complexes et répondre aux questions de l'étudiant.
-- **Système de Gamification** : Badges, points d'expérience (XP), et séries de connexion (Streaks).
+### 📚 Gestion Pédagogique Avancée
+- **Arborescence Intelligente** : Organisation claire en *Modules* > *Cours* / *TD*.
+- **Visualisation Intégrée** : Lecteur de documents PDF intégré, pas besoin de télécharger les fichiers.
+- **Tableaux de Bord Riches** : Statistiques en temps réel, graphiques de progression, et suivi des séries de révisions (Streaks).
 
 ---
 
-## 🏗 Architecture & Modélisation UML
+## 🏗️ Architecture du Projet
 
-Le système repose sur une architecture moderne de type **Microservices-Oriented** (Backend API-first) assurant sécurité, scalabilité et séparation des responsabilités.
-
-### Diagramme d'Architecture Globale (Mermaid)
+L'application repose sur une architecture moderne séparant clairement le backend (API) du frontend (Web/Mobile).
 
 ```mermaid
 graph TD
-    subgraph Clients
-        Web[Interface Web - React.js]
-        Mobile[App Mobile - React Native / Expo]
-    end
-
-    subgraph Backend API - Django REST
+    Client_Mobile[📱 Application Mobile<br/>React Native / Expo] --> |API REST / JWT| Backend
+    Client_Web[💻 Application Web<br/>React Native Web] --> |API REST / JWT| Backend
+    
+    subgraph Backend [Backend Django]
+        API[API DRF]
         Auth[Authentification JWT]
-        Content[Gestion des Cours & Modules]
-        QuizMgr[Moteur de Quiz & Flashcards]
-        AI[Service IA & Tuteur Virtuel]
-    end
-
-    subgraph External Services
-        Drive[Google Drive API]
-        OpenAI[OpenAI / Gemini API]
-    end
-
-    subgraph Database
-        DB[(PostgreSQL / SQLite)]
-        Redis[(Redis Cache)]
-    end
-
-    Web <-->|Requêtes HTTP / REST| Auth
-    Mobile <-->|Requêtes HTTP / REST| Auth
+        AI_Service[Service IA Gemini/OpenAI]
+        DB[(Base de Données<br/>SQLite/PostgreSQL)]
+        
+        API --> Auth
+        API --> AI_Service
+        API --> DB
+    End
     
-    Auth --- Content
-    Auth --- QuizMgr
-    Auth --- AI
-
-    Content <--> DB
-    QuizMgr <--> DB
-    AI <--> DB
-    
-    Content <-->|Téléchargement Docs| Drive
-    AI <-->|Génération de contenu| OpenAI
+    AI_Service --> |Requêtes LLM| Cloud_AI[Google Gemini API]
 ```
 
-### Modèle Relationnel des Données (UML)
+---
+
+## 📊 Modèle de Données (Aperçu)
+
+Voici comment les données principales sont structurées dans la base de données :
 
 ```mermaid
 erDiagram
-    USER ||--o{ STUDENT_PROGRESS : "has"
-    USER ||--o{ FLASHCARD_PROGRESS : "tracks"
-    
-    STREAM ||--|{ MODULE : "contains"
-    MODULE ||--|{ CHAPTER : "divided into"
-    CHAPTER ||--o{ RESOURCE : "has documents"
-    CHAPTER ||--o{ QUESTION_BANK : "generates"
-    
-    QUESTION_BANK ||--|{ QUESTION : "contains"
-    QUESTION ||--|{ CHOICE : "has options"
-    
-    USER {
-        int id PK
-        string email
-        string role "Admin / Student"
-        int total_xp
-    }
-    
+    MODULE ||--o{ CHAPTER : contient
     MODULE {
-        int id PK
-        string name
-        int stream_id FK
+        string nom
+        string description
     }
-    
+    CHAPTER ||--o{ RESOURCE : possede
+    CHAPTER {
+        string titre
+        string type
+    }
+    RESOURCE ||--o{ QUESTION_BANK : base_pour
     RESOURCE {
-        int id PK
-        string title
-        string drive_file_id
-        string resource_type
+        string titre
+        string fichier_pdf
     }
-    
-    QUESTION {
-        int id PK
-        string text
-        string explanation
+    QUESTION_BANK ||--o{ QUESTION : contient
+    QUESTION_BANK {
+        string nom
     }
+    USER ||--o{ TEST_SESSION : passe
+    TEST_SESSION {
+        float score
+        date date_passage
+    }
+    QUESTION_BANK ||--o{ TEST_SESSION : pour
 ```
 
 ---
 
-## 🛠 Stack Technique
+## 📈 Tableaux de Bord & Statistiques (Données Réelles)
 
-* **Frontend Web** : React.js, Vite, Tailwind CSS, Recharts, Lucide-React.
-* **Frontend Mobile** : React Native, Expo, React Navigation, Axios.
-* **Backend** : Python, Django, Django REST Framework, Celery (Tâches asynchrones).
-* **Base de données** : PostgreSQL (Production), SQLite (Développement).
-* **Authentification** : JWT (JSON Web Tokens) via `djangorestframework-simplejwt`.
-* **Services Tiers** : Google Drive API (Stockage cloud), API LLM (Génération de contenu pédagogique).
+L'application intègre des tableaux de bord dynamiques avec de véritables statistiques tirées de la base de données :
 
----
+- **Pour l'Administrateur** : 
+  - Suivi du nombre total d'utilisateurs, de documents et de quiz joués.
+  - Répartition des ressources (Cours, Ateliers, Examens) via des graphiques.
+  - Identification des étudiants en difficulté (Moyenne < 10/20).
 
-## 📈 Statistiques du Projet
-
-- **+40** Modules de cours gérés.
-- **Intégration Cloud** : Chargement fluide des documents via liens Drive sécurisés.
-- **Sécurité** : Expiration intelligente des sessions JWT (Sécurité niveau production).
+- **Pour l'Étudiant** :
+  - **Graphiques Radar / Barres** : Affichage des performances par module.
+  - Compteur de séries (Streaks) pour encourager la régularité.
+  - Moyenne générale calculée sur les `TestSessions`.
 
 ---
 
-## 🚀 Installation & Déploiement Local
+## 🛠️ Stack Technique Détaillée
 
-### Prérequis
-* Python 3.10+
-* Node.js 18+ & npm
-* Expo CLI
+| Composant | Technologie | Description |
+|-----------|-------------|-------------|
+| **Frontend** | React Native, Expo | Application hybride iOS, Android et Web. |
+| **Backend** | Django, Django REST | API robuste et sécurisée. |
+| **Authentification**| JWT (SimpleJWT) | Tokens sécurisés avec gestion des rafraîchissements. |
+| **Design / UI** | Lucide Icons, Glassmorphism | Interface utilisateur premium et moderne. |
+| **Intelligence**| LLM (Gemini API) | Cœur de la génération de QCM et correction de code. |
 
-### 1. Cloner le projet
+---
+
+## ⚙️ Installation & Démarrage Rapide
+
+> [!IMPORTANT]
+> Assurez-vous d'avoir Python 3.10+ et Node.js installés sur votre machine avant de commencer.
+
+### 1. Préparation du Backend (Django)
+
 ```bash
-git clone https://github.com/Homam-Dany/Application_Web_et_Mobile_des_Cours_Universitaires_Secteur_Informatique.git
-cd Application_Web_et_Mobile_des_Cours_Universitaires_Secteur_Informatique
-```
+# Activer l'environnement virtuel
+.\venv\Scripts\activate
 
-### 2. Configuration du Backend (Django)
-```bash
-# Créer et activer l'environnement virtuel
-python -m venv venv
-source venv/bin/activate  # Sur Windows: venv\Scripts\activate
-
-# Installer les dépendances
-pip install -r requirements.txt
-
-# Migrations & Lancement
+# Appliquer les migrations de la base de données
 python manage.py migrate
+
+# Lancer le serveur local
 python manage.py runserver
 ```
 
-### 3. Configuration du Web (React)
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### 2. Lancement du Frontend (React Native)
 
-### 4. Configuration de l'Application Mobile (React Native)
+Ouvrez un nouveau terminal et naviguez dans le dossier `mobile` :
+
 ```bash
 cd mobile
+
+# Installer les dépendances
 npm install
+
+# Démarrer la version Web
+npm run web
+
+# Démarrer sur mobile (Expo Go)
 npx expo start
 ```
 
 ---
 
-## 🤝 Contribution
-Toute contribution (Pull Requests, signalement de bugs) est la bienvenue pour améliorer la plateforme.
-
-<div align="center">
-  <p>Fait avec ❤️ par l'équipe de développement.</p>
-</div>
+> [!NOTE]
+> **Création & Propriété** : Cette plateforme a été imaginée, conçue et développée par **Homam Dany**. Toute reproduction ou utilisation non autorisée est interdite.
