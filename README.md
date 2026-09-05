@@ -131,9 +131,26 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-### 2. Lancement du Frontend (React Native)
+### 2. Lancement de l'Application Web Dédiée (React + Vite)
 
-Ouvrez un nouveau terminal et naviguez dans le dossier `mobile` :
+Ouvrez un terminal et naviguez dans le dossier `frontend` :
+
+```bash
+cd frontend
+
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur de développement Web (Vite)
+npm run dev
+```
+> Accédez à l'application Web sur : **`http://localhost:5173`**
+
+---
+
+### 3. Lancement de l'Application Mobile (React Native / Expo)
+
+Ouvrez un autre terminal et naviguez dans le dossier `mobile` :
 
 ```bash
 cd mobile
@@ -141,12 +158,13 @@ cd mobile
 # Installer les dépendances
 npm install
 
-# Démarrer la version Web
-npm run web
-
-# Démarrer sur mobile (Expo Go)
+# Démarrer sur mobile (Expo Go via QR Code)
 npx expo start
+
+# (Optionnel) Démarrer la version Expo Web
+npm run web
 ```
+> En mode Expo Web, l'accès se fait sur : **`http://localhost:8081`**
 
 ---
 

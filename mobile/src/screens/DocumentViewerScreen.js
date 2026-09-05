@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator, Modal, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
-import { ChevronLeft, Brain, MessageCircle, Send, X } from 'lucide-react-native';
+import { ChevronLeft, Brain, MessageCircle, Send, X, ExternalLink } from 'lucide-react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
@@ -104,6 +104,16 @@ export default function DocumentViewerScreen({ route, navigation }) {
             >
               <Brain size={20} color="#fff" />
               <Text style={styles.headerButtonText}>QCM</Text>
+            </TouchableOpacity>
+          )}
+
+          {Platform.OS === 'web' && (
+            <TouchableOpacity 
+              style={[styles.headerButton, { backgroundColor: '#0284c7', marginLeft: 10 }]}
+              onPress={() => window.open(viewerUrl, '_blank')}
+            >
+              <ExternalLink size={20} color="#fff" />
+              <Text style={styles.headerButtonText}>Plein écran</Text>
             </TouchableOpacity>
           )}
         </View>

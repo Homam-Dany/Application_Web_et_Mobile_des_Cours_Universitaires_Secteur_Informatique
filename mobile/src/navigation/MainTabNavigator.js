@@ -38,12 +38,24 @@ export default function MainTabNavigator({ route }) {
       } else {
         token = await SecureStore.getItemAsync('access_token');
       }
+      if (!token) {
+        setUserToken(null);
+        return;
+      }
       const res = await axios.get(`${API_URL}/users/me/`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       setIsAdmin(res.data.role === 'admin' || res.data.role === 'teacher');
     } catch (e) {
-      console.error(e);
+      console.error("Session invalide ou expirée:", e);
+      if (Platform.OS === 'web') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      } else {
+        await SecureStore.deleteItemAsync('access_token');
+        await SecureStore.deleteItemAsync('refresh_token');
+      }
+      setUserToken(null);
     } finally {
       setLoading(false);
     }
