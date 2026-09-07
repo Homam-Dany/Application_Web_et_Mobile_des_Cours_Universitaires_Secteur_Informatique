@@ -21,6 +21,8 @@ class Question(models.Model):
     difficulty = models.IntegerField(default=1, help_text="Niveau de difficulté de 1 à 5")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft_ai')
     source_resource = models.ForeignKey(Resource, on_delete=models.SET_NULL, null=True, blank=True)
+    is_ambiguous = models.BooleanField(default=False, help_text="Détectée automatiquement comme potentiellement fausse/ambiguë")
+    concepts = models.ManyToManyField('content.Concept', related_name='questions', blank=True)
 
     def __str__(self):
         return f"{self.text[:50]}..."

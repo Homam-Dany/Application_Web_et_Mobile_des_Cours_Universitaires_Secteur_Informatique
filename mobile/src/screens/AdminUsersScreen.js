@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform, ActivityIndicator, Animated, Dimensions } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 import { User, Trash2, Edit2, ShieldAlert, CheckCircle, Clock } from 'lucide-react-native';
 
 const { height } = Dimensions.get('window');
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function AdminUsersScreen() {
   const [users, setUsers] = useState([]);
@@ -23,7 +21,7 @@ export default function AdminUsersScreen() {
   const fetchUsers = async () => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.get(`${API_URL}/users/admin/users/`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get(`/users/admin/users/`, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(res.data);
       
       Animated.parallel([
@@ -40,7 +38,7 @@ export default function AdminUsersScreen() {
   const handleApprove = async (id) => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      await axios.patch(`${API_URL}/users/admin/users/${id}/`, 
+      await api.patch(`/users/admin/users/${id}/`, 
         { is_active: true },
         { headers: { Authorization: `Bearer ${token}` } }
       );

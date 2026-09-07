@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Platform, TouchableOpacity, Modal, TextInput, Animated, Dimensions } from 'react-native';
 import { BookOpen, ChevronRight, LayoutList, Plus, Trash2 } from 'lucide-react-native';
-import axios from 'axios';
+import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function CoursesScreen({ route, navigation }) {
   const { setUserToken } = route.params || {};
@@ -30,10 +28,10 @@ export default function CoursesScreen({ route, navigation }) {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
       
-      const roleRes = await axios.get(`${API_URL}/users/me/`, { headers: { Authorization: `Bearer ${token}` } });
+      const roleRes = await api.get(`/users/me/`, { headers: { Authorization: `Bearer ${token}` } });
       setIsAdmin(roleRes.data.role === 'admin' || roleRes.data.role === 'teacher');
       
-      const res = await axios.get(`${API_URL}/modules/`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get(`/modules/`, { headers: { Authorization: `Bearer ${token}` } });
       setModules(res.data);
       
       Animated.parallel([
@@ -52,7 +50,7 @@ export default function CoursesScreen({ route, navigation }) {
     if (!newModuleName) return;
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      await axios.post(`${API_URL}/modules/`, 
+      await api.post(`/modules/`, 
         { name: newModuleName, description: newModuleDesc },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,7 +68,7 @@ export default function CoursesScreen({ route, navigation }) {
     if (Platform.OS === 'web' && !window.confirm('Voulez-vous vraiment supprimer ce cours ?')) return;
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      await axios.delete(`${API_URL}/modules/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
+      await api.delete(`/modules/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
       fetchModulesAndRole();
     } catch (e) {
       console.error(e);

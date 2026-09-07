@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Platform, Animated, Easing } from 'react-native';
-import axios from 'axios';
+import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 import { Terminal, Lock, Mail, ChevronRight, Code, Cpu } from 'lucide-react-native';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function LoginScreen({ route, navigation }) {
   const { setUserToken } = route.params;
@@ -45,7 +43,7 @@ export default function LoginScreen({ route, navigation }) {
     
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/auth/token/`, {
+      const response = await api.post(`/auth/token/`, {
         username: email,
         password,
       });

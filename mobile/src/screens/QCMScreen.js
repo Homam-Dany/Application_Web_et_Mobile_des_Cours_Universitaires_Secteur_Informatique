@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Platform, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Platform, Animated, Dimensions, BackHandler, Alert } from 'react-native';
 import { Brain, ChevronLeft, CheckCircle, XCircle, Trophy } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function QCMScreen({ route, navigation }) {
   // Navigation State
@@ -28,13 +26,30 @@ export default function QCMScreen({ route, navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
+    const backAction = () => {
+      if (step === 2) {
+        Alert.alert("Quitter le Quiz", "Êtes-vous sûr de vouloir quitter ? Votre progression sera perdue.", [
+          { text: "Annuler", style: "cancel", onPress: () => null },
+          { text: "Quitter", style: "destructive", onPress: () => setStep(1) }
+        ]);
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+    return () => backHandler.remove();
+  }, [step]);
+
+  useEffect(() => {
     fetchBanks();
   }, []);
 
   const fetchBanks = async (isGeneratingRetry = false) => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.get(`${API_URL}/question-banks/`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get(`/question-banks/`, { headers: { Authorization: `Bearer ${token}` } });
       const fetchedBanks = res.data;
       setBanks(fetchedBanks);
       
@@ -66,7 +81,7 @@ export default function QCMScreen({ route, navigation }) {
     setGenerating(true);
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/resources/${resourceId}/generate_qcm/`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await api.post(`/resources/${resourceId}/generate_qcm/`, {}, { headers: { Authorization: `Bearer ${token}` } });
       // In dev with CELERY_TASK_ALWAYS_EAGER=True, this is synchronous.
       setTimeout(() => {
         setGenerating(false);
@@ -128,7 +143,7 @@ export default function QCMScreen({ route, navigation }) {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
       let finalScore = (score / selectedBank.questions.length) * 20; // Scale on 20
       
-      await axios.post(`${API_URL}/test-sessions/`, {
+      await api.post(`/test-sessions/`, {
         student: 1, // User is inferred by token normally, but if required we might need ID. Assuming backend uses request.user if we omit or we might need it. Actually serializer usually requires student ID if it's not read-only. We'll rely on backend to handle or fallback gracefully.
         bank: selectedBank.id,
         score: finalScore

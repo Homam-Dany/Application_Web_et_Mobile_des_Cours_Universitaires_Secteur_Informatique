@@ -1,13 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, Animated, Dimensions } from 'react-native';
 import { Send, Bot, User, Sparkles } from 'lucide-react-native';
-import axios from 'axios';
+import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 
 const { height } = Dimensions.get('window');
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function AIChatScreen() {
   const [messages, setMessages] = useState([
@@ -38,7 +36,7 @@ export default function AIChatScreen() {
 
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.post(`${API_URL}/chat/`, 
+      const res = await api.post(`/chat/`, 
         { message: userMessage.text },
         { headers: { Authorization: `Bearer ${token}` } }
       );

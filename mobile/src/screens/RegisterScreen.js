@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Platform, ScrollView, Animated, Easing } from 'react-native';
-import axios from 'axios';
+import api from '../services/api';
 import { UserPlus, ChevronLeft, Terminal, User, Mail, Lock, Code, Cpu } from 'lucide-react-native';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function RegisterScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -49,7 +47,7 @@ export default function RegisterScreen({ navigation }) {
     
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/users/register/`, {
+      const response = await api.post(`/users/register/`, {
         first_name: firstName,
         last_name: lastName,
         email: email,
@@ -152,6 +150,12 @@ export default function RegisterScreen({ navigation }) {
               onChangeText={setConfirmPassword}
               secureTextEntry
             />
+          </View>
+
+          <View style={styles.legalContainer}>
+            <Text style={styles.legalText}>
+              En m'inscrivant, j'accepte les <Text style={styles.legalLink}>Conditions Générales d'Utilisation</Text> et la <Text style={styles.legalLink}>Politique de Confidentialité</Text>.
+            </Text>
           </View>
 
           <TouchableOpacity 
@@ -285,6 +289,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 16,
     outlineStyle: 'none',
+  },
+  legalContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  legalText: {
+    color: '#94a3b8',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  legalLink: {
+    color: '#00ffcc',
+    textDecorationLine: 'underline',
   },
   button: {
     backgroundColor: '#00ffcc', // Neon Cyan

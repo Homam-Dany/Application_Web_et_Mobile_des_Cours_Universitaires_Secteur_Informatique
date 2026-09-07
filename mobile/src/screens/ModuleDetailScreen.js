@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform, Modal, TextInput, Animated, Dimensions } from 'react-native';
-import axios from 'axios';
+import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 import { ChevronLeft, Plus, Folder, FileText, Trash2 } from 'lucide-react-native';
 
 const { height } = Dimensions.get('window');
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function ModuleDetailScreen({ route, navigation }) {
   const { module, isAdmin } = route.params;
@@ -36,7 +34,7 @@ export default function ModuleDetailScreen({ route, navigation }) {
   const fetchModuleData = async () => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.get(`${API_URL}/modules/${module.id}/`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get(`/modules/${module.id}/`, { headers: { Authorization: `Bearer ${token}` } });
       const fetchedModule = res.data;
       
       if (fetchedModule.chapters) {
@@ -79,7 +77,7 @@ export default function ModuleDetailScreen({ route, navigation }) {
     if (Platform.OS === 'web' && !window.confirm('Voulez-vous vraiment supprimer ce fichier ?')) return;
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      await axios.delete(`${API_URL}/resources/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
+      await api.delete(`/resources/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
       refreshResources();
     } catch(e) {
       console.error(e);
@@ -94,7 +92,7 @@ export default function ModuleDetailScreen({ route, navigation }) {
     let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
     
     try {
-      const modRes = await axios.get(`${API_URL}/modules/${module.id}/`, { headers: { Authorization: `Bearer ${token}` } });
+      const modRes = await api.get(`/modules/${module.id}/`, { headers: { Authorization: `Bearer ${token}` } });
       const currentModule = modRes.data;
       
       if (selectedChapter) {
@@ -102,14 +100,14 @@ export default function ModuleDetailScreen({ route, navigation }) {
       } else if (currentModule.chapters && currentModule.chapters.length > 0) {
         targetChapterId = currentModule.chapters[0].id;
       } else {
-        const chapterRes = await axios.post(`${API_URL}/chapters/`, 
+        const chapterRes = await api.post(`/chapters/`, 
           { module: module.id, title: "Général", order: 1 },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         targetChapterId = chapterRes.data.id;
       }
       
-      await axios.post(`${API_URL}/resources/`, 
+      await api.post(`/resources/`, 
         { chapter: targetChapterId, title: newTitle, resource_type: 'course', drive_file_id: newDriveId },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, BookOpen, Brain, Bot, User, Settings, Database } from 'lucide-react-native';
 import { Platform, ActivityIndicator, View } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 
 import HomeScreen from '../screens/HomeScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
@@ -15,9 +15,7 @@ import PracticeScreen from '../screens/PracticeScreen';
 import AIChatScreen from '../screens/AIChatScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -42,7 +40,7 @@ export default function MainTabNavigator({ route }) {
         setUserToken(null);
         return;
       }
-      const res = await axios.get(`${API_URL}/users/me/`, { 
+      const res = await api.get(`/users/me/`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       setIsAdmin(res.data.role === 'admin' || res.data.role === 'teacher');

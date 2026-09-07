@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, ActivityIndicator, Dimensions, Animated } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 import { LogOut, Flame, Layers, TrendingUp, Award, BookOpen, Sparkles } from 'lucide-react-native';
 import { BarChart } from 'react-native-chart-kit';
 
 const { width, height } = Dimensions.get('window');
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function HomeScreen({ route, navigation }) {
   const { setUserToken } = route.params;
@@ -30,8 +28,8 @@ export default function HomeScreen({ route, navigation }) {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
       
       const [userRes, statsRes] = await Promise.all([
-        axios.get(`${API_URL}/users/me/`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/student/stats/`, { headers: { Authorization: `Bearer ${token}` } })
+        api.get(`/users/me/`, { headers: { Authorization: `Bearer ${token}` } }),
+        api.get(`/student/stats/`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       setUser(userRes.data);

@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from content.views import StreamViewSet, ModuleViewSet, ChapterViewSet, ResourceViewSet, AdminStatsView, GenerateQCMView, JobOfferViewSet
+from content.views import StreamViewSet, ModuleViewSet, ChapterViewSet, ResourceViewSet, AdminStatsView, GenerateQCMView, GenerateChapterSummaryView, GenerateExamSubjectView, JobOfferViewSet
 from quiz.views import QuestionBankViewSet, QuestionViewSet, AnswerChoiceViewSet, TestSessionViewSet, CodeEvaluateView, ChatbotView, StudentStatsView, FlashcardDeckViewSet, FlashcardViewSet, StudentFlashcardProgressViewSet, TutorChatView
 
 router = DefaultRouter()
@@ -28,8 +28,9 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('admin/stats/', AdminStatsView.as_view(), name='admin_stats'),
     path('resources/<int:resource_id>/generate_qcm/', GenerateQCMView.as_view(), name='generate_qcm'),
+    path('resources/<int:resource_id>/generate_exam/', GenerateExamSubjectView.as_view(), name='generate_exam'),
+    path('chapters/<int:chapter_id>/generate_summary/', GenerateChapterSummaryView.as_view(), name='generate_chapter_summary'),
     path('code/evaluate/', CodeEvaluateView.as_view(), name='code_evaluate'),
     path('chat/', ChatbotView.as_view(), name='chat'),
-    path('student/stats/', StudentStatsView.as_view(), name='student_stats'),
     path('tutor/chat/', TutorChatView.as_view(), name='tutor_chat'),
 ]

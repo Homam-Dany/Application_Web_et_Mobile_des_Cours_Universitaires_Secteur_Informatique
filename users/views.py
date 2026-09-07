@@ -158,3 +158,25 @@ class ChangePasswordView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({'message': 'Mot de passe mis à jour avec succès'})
+
+class DeleteAccountView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({'message': 'Compte supprimé avec succès'}, status=status.HTTP_204_NO_CONTENT)
+
+class RegisterPushTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        token = request.data.get('token')
+        if not token:
+            return Response({'error': 'Token est requis'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user = request.user
+        user.expo_push_token = token
+        user.save()
+        
+        return Response({'message': 'Push token enregistré avec succès'})

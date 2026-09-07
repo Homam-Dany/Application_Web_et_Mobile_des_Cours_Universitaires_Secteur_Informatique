@@ -18,12 +18,31 @@ class Chapter(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='chapters')
     title = models.CharField(max_length=200)
     order = models.PositiveIntegerField(default=0)
+    ai_summary = models.TextField(blank=True, default='', help_text="Résumé généré par IA")
 
     class Meta:
         ordering = ['order']
 
     def __str__(self):
         return self.title
+
+class Concept(models.Model):
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='concepts')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class ConceptPrerequisite(models.Model):
+    concept = models.ForeignKey(Concept, on_delete=models.CASCADE, related_name='prerequisite_of')
+    prerequisite = models.ForeignKey(Concept, on_delete=models.CASCADE, related_name='required_for')
+    
+    class Meta:
+        unique_together = ('concept', 'prerequisite')
+
+    def __str__(self):
+        return f"{self.prerequisite.name} -> {self.concept.name}"
 
 class Resource(models.Model):
     TYPE_CHOICES = (

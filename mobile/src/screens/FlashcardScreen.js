@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
-import axios from 'axios';
+import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 import { Layers, RotateCw } from 'lucide-react-native';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function FlashcardScreen({ navigation }) {
   const [cards, setCards] = useState([]);
@@ -27,7 +25,7 @@ export default function FlashcardScreen({ navigation }) {
         token = await SecureStore.getItemAsync('access_token');
       }
       
-      const res = await axios.get(`${API_URL}/flashcards/`, {
+      const res = await api.get(`/flashcards/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCards(res.data);

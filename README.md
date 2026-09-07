@@ -124,8 +124,17 @@ L'application intègre des tableaux de bord dynamiques avec de véritables stati
 # Activer l'environnement virtuel
 .\venv\Scripts\activate
 
+# Configurer les variables d'environnement
+cp .env.example .env
+# Modifiez le fichier .env avec vos clés réelles (Gemini API, etc.)
+
 # Appliquer les migrations de la base de données
 python manage.py migrate
+
+# Lancer Redis (nécessaire pour Celery / Tâches asynchrones)
+# Assurez-vous que Redis est lancé (sur le port 6379 par défaut)
+# Lancez le worker Celery dans un terminal séparé :
+celery -A core worker -l info --pool=solo
 
 # Lancer le serveur local
 python manage.py runserver

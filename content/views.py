@@ -87,6 +87,21 @@ class AdminStatsView(APIView):
                     'avg_score': round(student.avg_score, 1)
                 })
 
+        # Struggling chapters (Average score < 12)
+        struggling_chapters = []
+        chapters = Chapter.objects.annotate(avg_score=Avg('question_banks__testsession__score'))
+        for chapter in chapters:
+            if chapter.avg_score is not None and chapter.avg_score < 12:
+                struggling_chapters.append({
+                    'id': chapter.id,
+                    'title': chapter.title,
+                    'module': chapter.module.name,
+                    'avg_score': round(chapter.avg_score, 1)
+                })
+        
+        # Sort struggling chapters by lowest score
+        struggling_chapters = sorted(struggling_chapters, key=lambda x: x['avg_score'])
+
         return Response({
             'total_users': total_users,
             'total_documents': total_documents,
@@ -94,6 +109,7 @@ class AdminStatsView(APIView):
             'resource_distribution': resource_distribution,
             'activity_data': activity_data,
             'struggling_students': struggling_students,
+            'struggling_chapters': struggling_chapters,
             'platform_usage': {'web': 45, 'mobile': 55}
         })
 
@@ -113,3 +129,36 @@ class GenerateQCMView(APIView):
         generate_qcm_for_resource.delay(resource.id)
         
         return Response({"status": "Generation started", "resource_id": resource.id})
+
+class GenerateChapterSummaryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, chapter_id):
+        try:
+            chapter = Chapter.objects.get(id=chapter_id)
+        except Chapter.DoesNotExist:
+            return Response({"error": "Chapter not found"}, status=404)
+            
+        from content.tasks import generate_chapter_summary
+        
+        generate_chapter_summary.delay(chapter.id)
+        
+        return Response({"status": "Summary generation started", "chapter_id": chapter.id})
+
+class GenerateExamSubjectView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, resource_id):
+        try:
+            resource = Resource.objects.get(id=resource_id)
+        except Resource.DoesNotExist:
+            return Response({"error": "Resource not found"}, status=404)
+            
+        if resource.resource_type != 'exam':
+            return Response({"error": "Resource must be of type 'exam'"}, status=400)
+            
+        from content.tasks import generate_exam_subject_from_resource
+        
+        generate_exam_subject_from_resource.delay(resource.id)
+        
+        return Response({"status": "Exam generation started", "resource_id": resource.id})

@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator, Modal, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
 import { ChevronLeft, Brain, MessageCircle, Send, X, ExternalLink } from 'lucide-react-native';
-import axios from 'axios';
+import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 // Conditionally import WebView to avoid crashes on Web if it's not supported natively
 let WebView;
@@ -39,7 +37,7 @@ export default function DocumentViewerScreen({ route, navigation }) {
 
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const response = await axios.post(`${API_URL}/tutor/chat/`, 
+      const response = await api.post(`/tutor/chat/`, 
         { message: userMessage.text, documentTitle: resource.title },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -39,6 +39,9 @@ def download_file_from_drive(file_id, mime_type=None):
         status, done = downloader.next_chunk()
     return file_io.getvalue()
 
+import logging
+logger = logging.getLogger(__name__)
+
 def extract_text_from_file_bytes(file_bytes, file_name):
     """
     Extracts text from a file in memory, handling PDF and DOCX.
@@ -64,5 +67,5 @@ def extract_text_from_file_bytes(file_bytes, file_name):
             return ""
             
     except Exception as e:
-        print(f"Error extracting text from {file_name}: {e}")
+        logger.error(f"Error extracting text from {file_name}: {e}")
         return ""

@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput, ScrollView, ActivityIndicator, Animated, Dimensions } from 'react-native';
-import { User, LogOut, CheckCircle, ShieldAlert, KeyRound, UserCircle2 } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput, ScrollView, ActivityIndicator, Animated, Dimensions, Alert } from 'react-native';
+import { User, LogOut, CheckCircle, ShieldAlert, KeyRound, UserCircle2, Trash2, FileText } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 
 const { height } = Dimensions.get('window');
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function ProfileScreen({ route }) {
   const { setUserToken } = route.params;
@@ -37,7 +35,7 @@ export default function ProfileScreen({ route }) {
   const fetchUser = async () => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.get(`${API_URL}/users/me/`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get(`/users/me/`, { headers: { Authorization: `Bearer ${token}` } });
       setUser(res.data);
       setFirstName(res.data.first_name || '');
       setLastName(res.data.last_name || '');
@@ -57,7 +55,7 @@ export default function ProfileScreen({ route }) {
   const handleUpdateProfile = async () => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.put(`${API_URL}/users/me/update/`, 
+      const res = await api.put(`/users/me/update/`, 
         { first_name: firstName, last_name: lastName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -84,7 +82,7 @@ export default function ProfileScreen({ route }) {
     setPwdStatus('');
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      await axios.post(`${API_URL}/users/change-password/`, 
+      await api.post(`/users/change-password/`, 
         { old_password: oldPassword, new_password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -114,6 +112,34 @@ export default function ProfileScreen({ route }) {
       await SecureStore.deleteItemAsync('refresh_token');
     }
     setUserToken(null);
+  };
+
+  const handleDeleteAccount = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm("Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.")) {
+        executeDelete();
+      }
+    } else {
+      Alert.alert(
+        "Zone de Danger",
+        "Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.",
+        [
+          { text: "Annuler", style: "cancel" },
+          { text: "Supprimer", style: "destructive", onPress: executeDelete }
+        ]
+      );
+    }
+  };
+
+  const executeDelete = async () => {
+    try {
+      let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
+      await api.delete('/users/me/delete/', { headers: { Authorization: `Bearer ${token}` } });
+      handleLogout();
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Erreur", "Impossible de supprimer le compte.");
+    }
   };
 
   if (loading) {
@@ -240,11 +266,39 @@ export default function ProfileScreen({ route }) {
           </TouchableOpacity>
         </View>
 
+        {/* Section Mentions Légales */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <FileText size={24} color="#10b981" />
+            <Text style={styles.sectionTitle}>Mentions Légales</Text>
+          </View>
+          <TouchableOpacity style={styles.legalLinkButton}>
+            <Text style={styles.legalLinkText}>Conditions Générales d'Utilisation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.legalLinkButton}>
+            <Text style={styles.legalLinkText}>Politique de Confidentialité</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Bouton de Déconnexion */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <LogOut size={24} color="#ef4444" />
-          <Text style={styles.logoutText}>Se déconnecter de l'application</Text>
+          <LogOut size={20} color="#e53e3e" />
+          <Text style={styles.logoutButtonText}>Se déconnecter</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.logoutButton, {marginTop: 10, borderColor: '#aaa'}]} onPress={() => navigation.navigate('Legal')}>
+          <Text style={[styles.logoutButtonText, {color: '#555'}]}>Mentions Légales & Confidentialité</Text>
+        </TouchableOpacity>
+
+        {/* Zone de danger */}
+        <View style={styles.sectionDanger}>
+          <Text style={styles.sectionDangerTitle}>Zone de danger</Text>
+          <Text style={styles.sectionDangerText}>La suppression de votre compte effacera définitivement toutes vos données.</Text>
+          <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
+            <Trash2 size={24} color="#ffffff" />
+            <Text style={styles.deleteAccountText}>Supprimer mon compte</Text>
+          </TouchableOpacity>
+        </View>
         
         <View style={{ height: 100 }} />
       </Animated.View>
@@ -388,6 +442,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: '600',
   },
+  legalLinkButton: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  legalLinkText: {
+    color: '#3b82f6',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -403,5 +467,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 12,
+  },
+  sectionDanger: {
+    marginTop: 30,
+    backgroundColor: '#fff0f0',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  sectionDangerTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#b91c1c',
+    marginBottom: 10,
+  },
+  sectionDangerText: {
+    fontSize: 14,
+    color: '#991b1b',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  deleteAccountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#dc2626',
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#dc2626',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  deleteAccountText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
 });

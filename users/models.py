@@ -14,6 +14,9 @@ class User(AbstractUser):
     longest_streak = models.IntegerField(default=0)
     last_login_date = models.DateField(null=True, blank=True)
     xp = models.IntegerField(default=0)
+    
+    # Notifications
+    expo_push_token = models.CharField(max_length=255, null=True, blank=True, help_text="Token pour les notifications push Expo")
 
 class Badge(models.Model):
     name = models.CharField(max_length=100)

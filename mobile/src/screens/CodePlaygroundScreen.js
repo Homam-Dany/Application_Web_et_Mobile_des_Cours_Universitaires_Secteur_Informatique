@@ -3,11 +3,9 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Activi
 import { ChevronLeft, Play, CheckCircle, XCircle, Lightbulb, Code } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function CodePlaygroundScreen({ navigation }) {
   const [code, setCode] = useState('');
@@ -28,7 +26,7 @@ export default function CodePlaygroundScreen({ navigation }) {
 
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.post(`${API_URL}/code/evaluate/`, {
+      const res = await api.post(`/code/evaluate/`, {
         code,
         language
       }, { headers: { Authorization: `Bearer ${token}` } });

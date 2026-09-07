@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import api from '../services/api';
 import { BookOpen, Plus, Trash2, Edit2, Layers } from 'lucide-react-native';
 
-const API_URL = Platform.OS === 'web' 
-  ? 'http://127.0.0.1:8000/api/v1' 
-  : 'http://10.0.2.2:8000/api/v1';
+
 
 export default function AdminCoursesScreen() {
   const [courses, setCourses] = useState([]);
@@ -19,7 +17,7 @@ export default function AdminCoursesScreen() {
   const fetchCourses = async () => {
     try {
       let token = Platform.OS === 'web' ? localStorage.getItem('access_token') : await SecureStore.getItemAsync('access_token');
-      const res = await axios.get(`${API_URL}/modules/`, { 
+      const res = await api.get(`/modules/`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       setCourses(res.data);
